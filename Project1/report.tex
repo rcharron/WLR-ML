@@ -25,25 +25,60 @@
 \maketitle
 
 \section*{Experimental Protocol}
-Suppose that someone wants to reproduce your results. Briefly describe the steps used to obtain the
-predictions starting from the raw data set downloaded from the project website. Use the following
-sections to explain your methodology. Feel free to add graphs or screenshots if you think it's
-necessary. The report should contain a maximum of 2 pages.
+
+First we can make new feature based on current features ones.
+
+\textbf{Step 1:}Take randomly 10\% of the dataset ($\mathcal{X_v}$) to compute the empirical loss and make the regression with the 90\% rest of data ($\mathcal{X_t}$).
+
+\textbf{Step 2:} For each feature and the prediction, center and scale data in $[-1,1]$, this gives two linear scaling function $x\mapsto diag(a_1,\ldots,a_n) x + b$ (one for the features and one for the prediction). Use $\mathcal{X_t}$ to compute $a,b$ but scale all the data.
+
+\textbf{Step 3:} Make the regression with the classical method or Ridge or Lasso method using $\mathcal{X_t}$ to get $\beta$, the coefficients of the regression.
+
+\textbf{Step 4:} Compute the empirical error on $\mathcal{X_v}$
+
+\textbf{Step 5:} Repeat step 1-4 many times and keep result with the minimum empirical error. You get $l_d$ a scaling function for the features, $l_r$ a scaling function for the prediction and $\beta$ a vector.
+
+To predict a result for an entrie $e$, we just compute $l_r^{-1}(\beta l_d(e))$.
+
+%Suppose that someone wants to reproduce your results. Briefly describe the steps used to obtain the
+%predictions starting from the raw data set downloaded from the project website. Use the following
+%sections to explain your methodology. Feel free to add graphs or screenshots if you think it's
+%necessary. The report should contain a maximum of 2 pages.
 
 \section{Tools}
-Which tools and libraries have you used (e.g. Matlab, Python with scikit-learn, Java with Weka,
-SPSS, language x with library y, $\ldots$). If you have source-code (Matlab scripts, Python scripts, Java source folder, \dots),
-make sure to submit it on the project website together with this report. If you only used
-command-line or GUI-tools describe what you did.
+
+We use Matlab to do the whole thing. Lasso is already implemented in Matlab which make the job easy.
+Functors also simplify the things. 
+
+You find code source with the project:
+
+\verb-makefeatures.m- allow to create need features fast.
+
+\verb-linearbayesian.m-, \verb-linearlasso.m- and \verb-ridge.m- are the regression method which have to output $\beta$ and corresponding function $x\mapsto \beta x$.
+
+\verb-manytest.m- takes the whole Data (the csv file without treatment), a regression function (parameters should already be setted so that this function takes just the features and predictions in input) and the number of iterations (see step 5)
+
+\verb-launchscript.m- is an functional example of how to use the script.
+%Which tools and libraries have you used (e.g. Matlab, Python with scikit-learn, Java with Weka,
+%SPSS, language x with library y, $\ldots$). If you have source-code (Matlab scripts, Python scripts, Java source folder, \dots),
+%make sure to submit it on the project website together with this report. If you only used
+%command-line or GUI-tools describe what you did.
 
 \section{Algorithm}
-Describe the algorithm you used for regression (e.g. ordinary least squares, ridge regression, $\ldots$)
+We use : 
+\begin{itemize}
+\item ordinary least squares, 
+\item ridge with penalty coefficient of $\frac{1}{2}$ using 28 features or $10$ using 238 features.
+\item Lasso regression keep $\frac{1}{3}$ of non null beta coefficients using 28 features or $\frac{1}{20}$ using 238 features.
+\end{itemize}
 
 \section{Features}
-Did you construct any new features? What feature transforms did you use?
+We used the logarithm to create new features (this is good because sum of logs is log of products). This makes our 28 features
+
+And inverse of features, product of two features, which gives lots of features, but seems not to suits well with Lasso.
 
 \section{Parameters}
-How did you find the parameters of your model? (What parameters have you searched over, cross validation procedure, $\ldots$)
+We did not search a lot for parameters, just try to keep few features in account. That is easy to to with Lasso, for ridge we just put an high penalty weight.
 
 \section{Lessons Learned} What other algorithms, tools or methods did you try out that didn't work well?
 Why do you think they performed worse than what you used for your final submission?
